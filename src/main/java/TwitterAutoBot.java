@@ -1,7 +1,4 @@
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
+import twitter4j.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -22,7 +19,7 @@ public class TwitterAutoBot {
             ) {
                 while ((line = br.readLine()) != null) {
                     // Deal with the line
-                    sendTweet(line);
+                    sendDirectMessage();
                     System.out.println("Tweeting: " + line + "...");
 
                     try {
@@ -37,6 +34,18 @@ public class TwitterAutoBot {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    private static void sendDirectMessage() {
+        Twitter twitter = TwitterFactory.getSingleton();
+
+        try {
+            User wanderingdave = twitter.showUser("wanderingdave");
+            twitter.sendDirectMessage(wanderingdave.getId(), "I am a bot and I love you");
+        } catch (TwitterException e) {
+            System.out.println("couldn't find this user" + e);
         }
 
     }
