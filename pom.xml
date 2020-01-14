@@ -25,6 +25,17 @@
             <artifactId>twitter4j-core</artifactId>
             <version>[3.0,)</version>
         </dependency>
+        <dependency>
+            <!-- jsoup HTML parser library @ https://jsoup.org/ -->
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.12.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jaunt.code</groupId>
+            <artifactId>jaunt</artifactId>
+            <version>1.6.0</version>
+        </dependency>
     </dependencies>
 
 </project>
