@@ -1,5 +1,7 @@
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
+import com.jaunt.Document;
+import com.jaunt.Element;
+import com.jaunt.Elements;
+import com.jaunt.UserAgent;
 import twitter4j.*;
 
 import java.io.*;
@@ -21,17 +23,77 @@ public class TwitterAutoBot {
 //
 //        System.out.println(document.body().text());
         try {
-            Connection.Response loginForm = Jsoup.connect("https://saltlakecityut.citysourced.com/").
-                    method(Connection.Method.GET).execute();
-            org.jsoup.nodes.Document doc = Jsoup.connect("https://saltlakecityut.citysourced.com/").
-                    data("formhash","97bfbf").data("hdn_refer","https://saltlakecityut.citysourced.com/pages/ajax/callapiendpoint.ashx")
-                    .cookies(loginForm.cookies()).header("Accept","application/json, text/javascript, */*; q=0.01").header("X-Requested-With","XMLHttpRequest").post();
+            UserAgent agent = new UserAgent();
+//            https://saltlakecityut.citysourced.com/servicerequests/nearby
 
-                    doc.body();
+             Document doc = agent.visit("https://saltlakecityut.citysourced.com/servicerequests/nearby");
 
-            System.out.println(doc.data());
+            System.out.println("Response:\n" + agent.response);
 
-        } catch (IOException e) {
+//            <a class="link" href="/servicerequests/840073">
+//            <i class="far fa-chevron-right"></i>
+//            <div class="item-content">
+//                <div class="item-media">
+//                    <img src="https://d2p5liwq1c5kwh.cloudfront.net/FileStorage/2020-01/eeeef94e81d84f6e88bff8b6bbbb64d6_md.jpg">
+//                </div>
+//                <div class="item-inner">
+//                    <div class="item-title">
+//                    Abandoned Shopping Cart
+//                    </div>
+//                    <div class="item-after">
+//                        <div>
+//                            <div>Updated: <span class="item-updated">12h ago</span></div>
+//                            <span class="Received item-status">Received</span>
+//                        </div>
+//                    </div>
+//                </div>
+//            </div>
+//        </a>
+
+//            System.out.println(doc.innerHTML());
+
+            Element body = agent.doc.findEach("<body>");
+            System.out.println("This is the body " + body + " | body child text " + body.getChildText());
+
+            Elements divs = body.findEach("<div>");
+            for (Element div: divs) {
+//                System.out.println("This is a div " + div);
+//                System.out.println("this is div child text " + div.getChildText());
+            }
+
+            Element appDiv = body.findFirst("div id=app");
+//            System.out.println("is this the app div? " + appDiv + appDiv.getChildText());
+//            System.out.println(appDiv.innerHTML());
+
+            Element divList = appDiv.findEach("div id=divList");
+
+
+            Element ul = divList.findFirst("<ul>");
+            System.out.println(ul.innerHTML());
+
+
+
+
+//            Elements tables = agent.doc.findEach("<a class=\"link\" href>");
+//            //find non-nested tables
+//            System.out.println("Found " + tables.size() + " tables:");
+//            for(Element table : tables){                               //iterate through search results
+//                System.out.println(table.outerHTML() + "\n----\n");
+//                System.out.println(table.getTextContent());//print each element and its contents
+//                System.out.println(tables.getAttributeNames());
+//            }
+
+//
+//            Connection.Response loginForm = Jsoup.connect("https://saltlakecityut.citysourced.com/").
+//                    method(Connection.Method.GET).execute();
+//            org.jsoup.nodes.Document doc = Jsoup.connect("https://saltlakecityut.citysourced.com/").
+//                    data("formhash","97bfbf").data("hdn_refer","https://saltlakecityut.citysourced.com/pages/ajax/callapiendpoint.ashx")
+//                    .cookies(loginForm.cookies()).header("Accept","application/json, text/javascript, */*; q=0.01").header("X-Requested-With","XMLHttpRequest").post();
+//
+//            doc.body();
+//
+
+        } catch ( Exception  e) {
             System.out.println("tried getting the url with ajax and failed " + e);
         }
 
