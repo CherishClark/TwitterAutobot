@@ -1,100 +1,52 @@
-import com.jaunt.Document;
-import com.jaunt.Element;
-import com.jaunt.Elements;
-import com.jaunt.UserAgent;
+import com.jauntium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import twitter4j.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TwitterAutoBot {
 
     public static void main(String[] args) {
-//        tweetLines();
 
-
-//        Connection.Response loginForm=Jsoup.connect("http://www.a5.cn").
-//                method(Connection.Method.GET).execute();
-//
-//        Document document=Jsoup.connect("http://www.a5.cn/login.html").
-//                data("formhash","97bfbf").data("hdn_refer","http://www.a5.cn/")
-//        data("account","userID").data("autoLogin","1").data("password","your password").
-//                cookies(loginForm.cookies()).header("Accept","application/json, text/javascript, */*; q=0.01").header("X-Requested-With","XMLHttpRequest").post();
-//
-//        System.out.println(document.body().text());
         try {
-            UserAgent agent = new UserAgent();
-//            https://saltlakecityut.citysourced.com/servicerequests/nearby
 
-             Document doc = agent.visit("https://saltlakecityut.citysourced.com/servicerequests/nearby");
+            //Add system property for chromedriver
+            System.setProperty("webdriver.chrome.driver", "/Users/cherishclark/projects/TwitterAutoBot/chromedriver");   //setup (edit the path)
 
-            System.out.println("Response:\n" + agent.response);
+            Browser browser = new Browser(new ChromeDriver());   //create new browser window
+            browser.visit("https://saltlakecityut.citysourced.com/servicerequests/nearby");                  //visit a url
+            Node bodyNode = browser.doc.findFirst("<body>").toNode();   //g// et body node
 
-//            <a class="link" href="/servicerequests/840073">
-//            <i class="far fa-chevron-right"></i>
-//            <div class="item-content">
-//                <div class="item-media">
-//                    <img src="https://d2p5liwq1c5kwh.cloudfront.net/FileStorage/2020-01/eeeef94e81d84f6e88bff8b6bbbb64d6_md.jpg">
-//                </div>
-//                <div class="item-inner">
-//                    <div class="item-title">
-//                    Abandoned Shopping Cart
-//                    </div>
-//                    <div class="item-after">
-//                        <div>
-//                            <div>Updated: <span class="item-updated">12h ago</span></div>
-//                            <span class="Received item-status">Received</span>
-//                        </div>
-//                    </div>
-//                </div>
-//            </div>
-//        </a>
+            Elements ticketElements = browser.doc.findEvery("<a class=link>");
 
-//            System.out.println(doc.innerHTML());
-
-            Element body = agent.doc.findEach("<body>");
-            System.out.println("This is the body " + body + " | body child text " + body.getChildText());
-
-            Elements divs = body.findEach("<div>");
-            for (Element div: divs) {
-//                System.out.println("This is a div " + div);
-//                System.out.println("this is div child text " + div.getChildText());
+            Elements items = browser.doc.findEvery("<div class=item-title>");
+            List<Element> cart = new ArrayList<>();
+            for (Element e : items ) {
+                if (e.getTextContent().contains("Cart")){
+                cart.add(e);
+            }
             }
 
-            Element appDiv = body.findFirst("div id=app");
-//            System.out.println("is this the app div? " + appDiv + appDiv.getChildText());
-//            System.out.println(appDiv.innerHTML());
-
-            Element divList = appDiv.findEach("div id=divList");
-
-
-            Element ul = divList.findFirst("<ul>");
-            System.out.println(ul.innerHTML());
-
-
-
-
-//            Elements tables = agent.doc.findEach("<a class=\"link\" href>");
-//            //find non-nested tables
-//            System.out.println("Found " + tables.size() + " tables:");
-//            for(Element table : tables){                               //iterate through search results
-//                System.out.println(table.outerHTML() + "\n----\n");
-//                System.out.println(table.getTextContent());//print each element and its contents
-//                System.out.println(tables.getAttributeNames());
+            String href = cart.get(0).getParent().getParent().getParent().getAt("href");
+//            List<String> ticketUrls = new ArrayList<>();
+//            for (Element e : ticketElements) {
+//                String href = null;
+//                try {
+//                     href = e.getAt("href");
+//                } catch (NotFound ex) {
+//                    System.out.println(" that didn't work " + e);
+//                }
+//
+//                    ticketUrls.add(href);
 //            }
 
-//
-//            Connection.Response loginForm = Jsoup.connect("https://saltlakecityut.citysourced.com/").
-//                    method(Connection.Method.GET).execute();
-//            org.jsoup.nodes.Document doc = Jsoup.connect("https://saltlakecityut.citysourced.com/").
-//                    data("formhash","97bfbf").data("hdn_refer","https://saltlakecityut.citysourced.com/pages/ajax/callapiendpoint.ashx")
-//                    .cookies(loginForm.cookies()).header("Accept","application/json, text/javascript, */*; q=0.01").header("X-Requested-With","XMLHttpRequest").post();
-//
-//            doc.body();
-//
+           sendDirectMessage(href);
 
-        } catch ( Exception  e) {
-            System.out.println("tried getting the url with ajax and failed " + e);
+        } catch (NotFound e) {
+            System.out.println(e);
         }
 
 
@@ -110,7 +62,7 @@ public class TwitterAutoBot {
             ) {
                 while ((line = br.readLine()) != null) {
                     // Deal with the line
-                    sendDirectMessage();
+                    sendDirectMessage("");
                     System.out.println("Tweeting: " + line + "...");
 
                     try {
@@ -129,12 +81,12 @@ public class TwitterAutoBot {
 
     }
 
-    private static void sendDirectMessage() {
+    private static void sendDirectMessage(String s) {
         Twitter twitter = TwitterFactory.getSingleton();
 
         try {
             User wanderingdave = twitter.showUser("wanderingdave");
-            twitter.sendDirectMessage(wanderingdave.getId(), "I am a bot and I love you");
+            twitter.sendDirectMessage(wanderingdave.getId(), "Help me, I'm abandoned " + s);
         } catch (TwitterException e) {
             System.out.println("couldn't find this user" + e);
         }
