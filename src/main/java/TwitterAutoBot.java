@@ -23,33 +23,35 @@ public class TwitterAutoBot {
             Elements ticketElements = browser.doc.findEvery("<a class=link>");
 
             Elements items = browser.doc.findEvery("<div class=item-title>");
-            List<Element> cart = new ArrayList<>();
-            for (Element e : items ) {
-                if (e.getTextContent().contains("Cart")){
-                cart.add(e);
-            }
+            List<Element> abandonedCarts = new ArrayList<>();
+            for (Element e : items) {
+                if (isTicketOfType(e, "Cart") && isTicketInStatusOf(e, "In Process")) {
+                    abandonedCarts.add(e);
+                }
             }
 
-            String href = cart.get(0).getParent().getParent().getParent().getAt("href");
-//            List<String> ticketUrls = new ArrayList<>();
-//            for (Element e : ticketElements) {
-//                String href = null;
-//                try {
-//                     href = e.getAt("href");
-//                } catch (NotFound ex) {
-//                    System.out.println(" that didn't work " + e);
-//                }
-//
-//                    ticketUrls.add(href);
-//            }
+            Element abandonedcart = abandonedCarts.get(0);
+            String href = getHrefLinkFromListElement(abandonedcart);
 
-           sendDirectMessage(href);
+
+//            sendDirectMessage(href);
 
         } catch (NotFound e) {
             System.out.println(e);
         }
 
 
+    }
+
+    private static boolean isTicketInStatusOf(Element e, String status) {
+        return e.nextElementSibling().innerHTML().contains(status);
+    }
+
+    private static boolean isTicketOfType(Element e, String type) {
+        return e.getTextContent().contains(type);
+    }
+    private static String getHrefLinkFromListElement(Element abandonedCart) throws NotFound {
+        return abandonedCart.getParent().getParent().getParent().getAt("href");
     }
 
     private static void tweetLines() {
@@ -100,7 +102,8 @@ public class TwitterAutoBot {
         try {
             status = twitter.updateStatus(line);
             System.out.println(status);
-        } catch (TwitterException e) {;
+        } catch (TwitterException e) {
+            ;
             e.printStackTrace();
         }
     }
