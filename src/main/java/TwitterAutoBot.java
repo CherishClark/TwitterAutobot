@@ -4,12 +4,15 @@ import twitter4j.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TwitterAutoBot {
 
     public static void main(String[] args) {
+
 
         try {
 
@@ -21,18 +24,52 @@ public class TwitterAutoBot {
             Node bodyNode = browser.doc.findFirst("<body>").toNode();   //g// et body node
 
             Elements ticketElements = browser.doc.findEvery("<a class=link>");
-
             Elements items = browser.doc.findEvery("<div class=item-title>");
-            List<Element> abandonedCarts = new ArrayList<>();
+
+
+            List<Element> ticketsIcareAbout = new ArrayList<>();
             for (Element e : items) {
-                if (isTicketOfType(e, "Cart") && isTicketInStatusOf(e, "In Process")) {
-                    abandonedCarts.add(e);
+
+                boolean isTypeICareAbout = isTicketOfType(e, Issue.IssueType.BIKING.getIssueName())
+                        || isTicketOfType(e, Issue.IssueType.CROSSWALKS.getIssueName())
+                        || isTicketOfType(e, Issue.IssueType.SIDEWALKS__RAMPS.getIssueName())
+                        || isTicketOfType(e, Issue.IssueType.STREET_CURB.getIssueName());
+
+                if (isTypeICareAbout && isTicketInStatusOf(e, "Received")) {
+                    ticketsIcareAbout.add(e);
                 }
             }
 
-            Element abandonedcart = abandonedCarts.get(0);
+            Element abandonedcart = ticketsIcareAbout.get(0);
             String href = getHrefLinkFromListElement(abandonedcart);
 
+            Document listItemPageDoc = browser.visit(href);
+
+            listItemPageDoc.findEvery("<span id=updatedLng class='Hdn");
+            String s = listItemPageDoc.findFirst("<span id=updatedLng class='Hdn").getTextContent();
+            // case PATTERN_DAY_OF_MONTH:         // 'd'
+            // case PATTERN_HOUR_OF_DAY0:         // 'H' 0-based.  eg, 23:59 + 1 hour =>> 00:59
+            // case PATTERN_MINUTE:               // 'm'
+            // case PATTERN_SECOND:               // 's'
+            // case PATTERN_MILLISECOND:          // 'S'
+            // case PATTERN_DAY_OF_YEAR:          // 'D'
+            // case PATTERN_DAY_OF_WEEK_IN_MONTH: // 'F'
+            // case PATTERN_WEEK_OF_YEAR:         // 'w'
+            // case PATTERN_WEEK_OF_MONTH:        // 'W'
+            // case PATTERN_HOUR0:                // 'K' 0-based.  eg, 11PM + 1 hour =>> 0 AM
+            // case PATTERN_ISO_DAY_OF_WEEK:      // 'u' (pseudo field);
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy @ KK:mm aa");
+
+            try {
+                Date date = formatter.parse(s);
+            } catch (Exception e) {
+                System.out.println(e + "date no work");
+            }
+//
+//            LocalDate localDate = new LocalDate(year, month, dayOfMonth);
+//            LocalTime localTime = new LocalTime(hour, minute, second);
+//                    new LocalDateTime()
+//                   <span id="updatedLng" class="Hdn" style="display: none;">Jan 25, 2020 @ 05:25 PM</span>
 
 //            sendDirectMessage(href);
 
@@ -50,6 +87,7 @@ public class TwitterAutoBot {
     private static boolean isTicketOfType(Element e, String type) {
         return e.getTextContent().contains(type);
     }
+
     private static String getHrefLinkFromListElement(Element abandonedCart) throws NotFound {
         return abandonedCart.getParent().getParent().getParent().getAt("href");
     }
